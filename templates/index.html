@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV to Comment Response Sheet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --surface: #18181c;
+      --border: #2a2a30;
+      --text: #e4e4e7;
+      --muted: #71717a;
+      --accent: #a78bfa;
+      --accent-hover: #c4b5fd;
+      --error: #f87171;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    main {
+      width: 100%;
+      max-width: 420px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+      letter-spacing: -0.02em;
+    }
+
+    p.subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0 0 1.5rem 0;
+      line-height: 1.5;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .file-wrap {
+      position: relative;
+    }
+
+    input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      font-size: 0;
+    }
+
+    .file-label {
+      display: block;
+      padding: 1rem 1.25rem;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .file-wrap:hover .file-label,
+    input[type="file"]:focus + .file-label {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .file-name {
+      margin-top: 0.35rem;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    button[type="submit"] {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.75rem 1.25rem;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button[type="submit"]:hover {
+      background: var(--accent-hover);
+    }
+
+    button[type="submit"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .flash {
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .flash.error {
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--error);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+
+    .format-note {
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CSV → Comment Response Sheet</h1>
+    <p class="subtitle">Upload a CSV with <strong>Page</strong> and <strong>Text</strong> columns to get an Excel file.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category or 'error' }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('transform') }}" method="post" enctype="multipart/form-data" id="form">
+      <div class="file-wrap">
+        <input type="file" name="file" id="file" accept=".csv" required>
+        <label class="file-label" for="file">
+          Choose CSV file
+          <div class="file-name" id="file-name"></div>
+        </label>
+      </div>
+      <button type="submit" id="submit-btn">Download Excel</button>
+    </form>
+
+    <p class="format-note">CSV must have headers: <code>Page</code> and <code>Text</code>. Output columns: Page. and OE/Owner Comment.</p>
+  </main>
+
+  <script>
+    document.getElementById('file').addEventListener('change', function () {
+      var name = document.getElementById('file-name');
+      if (this.files.length) {
+        name.textContent = this.files[0].name;
+      } else {
+        name.textContent = '';
+      }
+    });
+  </script>
+</body>
+</html>

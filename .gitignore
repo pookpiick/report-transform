@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.env
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Generated Excel (keep template)
+output/*.xlsx
+!output/comment_response_template.xlsx
+
+# User input (optional: remove these lines if you want to commit sample CSVs)
+input/*.csv
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
