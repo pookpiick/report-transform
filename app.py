@@ -11,7 +11,7 @@ from flask import Flask, render_template, request, send_file, flash, redirect, u
 from transform import TEMPLATE_PATH, transform_csv_to_workbook
 
 app = Flask(__name__)
-app.secret_key = "xlsx-transform-secret"
+app.secret_key = "report-transform-secret"
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB
 
 

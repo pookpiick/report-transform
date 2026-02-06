@@ -2,7 +2,7 @@
 # https://render.com/docs/blueprint-spec
 services:
   - type: web
-    name: xlsx-transform
+    name: report-transform
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --bind 0.0.0.0:$PORT app:app

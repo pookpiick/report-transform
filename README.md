@@ -1,4 +1,4 @@
-# xlsx-transform
+# report-transform
 
 Reads CSV files from `input/` (columns **Page**, **Text**) and creates one Excel file per CSV in `output/`, using the template structure. Input **Page** is written to **Page.** and **Text** to **OE/Owner Comment**.
 
@@ -58,16 +58,16 @@ Host the web app on [Render](https://render.com) so anyone can use it in the bro
 
 1. Go to **[render.com](https://render.com)** and sign up or log in (GitHub login is easiest).
 2. In the dashboard, click **New +** → **Web Service**.
-3. Connect your Git provider and select the **xlsx-transform** repository (or the repo where you pushed this project).
+3. Connect your Git provider and select the **report-transform** repository (or the repo where you pushed this project).
 4. Configure the service:
-   - **Name:** `xlsx-transform` (or any name you like)
+   - **Name:** `report-transform` (or any name you like)
    - **Region:** choose the closest to you
    - **Runtime:** **Python 3**
    - **Build Command:** `pip install -r requirements.txt`
    - **Start Command:** `gunicorn --bind 0.0.0.0:$PORT app:app`
    - **Instance type:** **Free** (if available)
 5. Click **Create Web Service**. Render will clone the repo, run the build, and start the app.
-6. When the build finishes, your app will be live at a URL like **`https://xlsx-transform-xxxx.onrender.com`**. Open it to upload CSV and download Excel.
+6. When the build finishes, your app will be live at a URL like **`https://report-transform-xxxx.onrender.com`**. Open it to upload CSV and download Excel.
 
 ### Using the Blueprint (optional)
 
