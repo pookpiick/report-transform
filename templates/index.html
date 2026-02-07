@@ -14,8 +14,8 @@
       --border: #2a2a30;
       --text: #e4e4e7;
       --muted: #71717a;
-      --accent: #a78bfa;
-      --accent-hover: #c4b5fd;
+      --accent: #217fcb;
+      --accent-hover: #3d8fd4;
       --error: #f87171;
       --radius: 12px;
     }
@@ -30,7 +30,7 @@
       color: var(--text);
       min-height: 100vh;
       margin: 0;
-      padding: 2rem;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -39,38 +39,38 @@
 
     main {
       width: 100%;
-      max-width: 420px;
+      max-width: 560px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 2rem;
+      padding: 1.25rem;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
 
     h1 {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: 600;
-      margin: 0 0 0.5rem 0;
+      margin: 0 0 0.25rem 0;
       letter-spacing: -0.02em;
     }
 
     p.subtitle {
       color: var(--muted);
-      font-size: 0.9rem;
-      margin: 0 0 1.5rem 0;
-      line-height: 1.5;
+      font-size: 0.85rem;
+      margin: 0 0 0.75rem 0;
+      line-height: 1.4;
     }
 
     form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.75rem;
     }
 
     .field {
       display: flex;
       flex-direction: column;
-      gap: 0.35rem;
+      gap: 0.25rem;
     }
 
     .field-label {
@@ -112,15 +112,20 @@
     }
 
     .file-label {
-      display: block;
-      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 0.6rem 1rem;
       background: var(--bg);
       border: 1px dashed var(--border);
       border-radius: var(--radius);
       text-align: center;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       transition: border-color 0.2s, color 0.2s;
+      min-height: 2.5rem;
+      box-sizing: border-box;
     }
 
     .file-wrap:hover .file-label,
@@ -137,9 +142,9 @@
 
     button[type="submit"] {
       font-family: inherit;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 600;
-      padding: 0.75rem 1.25rem;
+      padding: 0.6rem 1rem;
       background: var(--accent);
       color: var(--bg);
       border: none;
@@ -158,10 +163,10 @@
     }
 
     .flash {
-      padding: 0.75rem 1rem;
+      padding: 0.5rem 0.75rem;
       border-radius: var(--radius);
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
     }
 
     .flash.error {
@@ -171,18 +176,56 @@
     }
 
     .format-note {
-      margin-top: 1.25rem;
-      padding-top: 1.25rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
       border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .field-desc {
       font-size: 0.8rem;
       color: var(--muted);
-      line-height: 1.5;
+      margin: 0;
+      line-height: 1.35;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .field-row-inputs {
+      align-items: stretch;
+    }
+
+    .field-row-inputs .field-select,
+    .field-row-inputs .file-label {
+      min-height: 2.5rem;
+      box-sizing: border-box;
+    }
+
+    .field-row-inputs .file-wrap {
+      display: flex;
+    }
+
+    .field-row-inputs .file-label {
+      flex: 1;
+      min-height: 2.5rem;
+    }
+
+    @media (max-width: 480px) {
+      .field-row {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
   <main>
-    <h1>CSV → Comment Response Sheet</h1>
+    <h1>Comment File CSV → Comment Response Sheet</h1>
     <p class="subtitle">Upload a CSV with <strong>Page</strong> and <strong>Text</strong> columns to get an Excel file.</p>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -195,47 +238,52 @@
 
     <form action="{{ url_for('transform') }}" method="post" enctype="multipart/form-data" id="form">
       <div class="field">
-        <label for="revision" class="field-label">Revision</label>
-        <select name="revision" id="revision" class="field-select">
-          <option value="">— Select —</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-          <option value="D">D</option>
-          <option value="E">E</option>
-          <option value="F">F</option>
-          <option value="G">G</option>
-          <option value="0">0</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="previous" class="field-label">Previous revision</label>
+        <label for="previous" class="field-label">1. Previous revision</label>
+        <p class="field-desc">Upload the previous Excel file first. Skip if this is the first revision.</p>
         <div class="file-wrap">
           <input type="file" name="previous" id="previous" accept=".xlsx,.xls">
           <label class="file-label" for="previous">
-            Choose Excel file (optional)
+            Choose Excel file
             <div class="file-name" id="previous-name"></div>
           </label>
         </div>
       </div>
       <div class="field">
-        <label for="file" class="field-label">Comment File</label>
-        <div class="file-wrap">
-          <input type="file" name="file" id="file" accept=".csv" required>
-          <label class="file-label" for="file">
-            Choose CSV file
-            <div class="file-name" id="file-name"></div>
-          </label>
+        <label for="revision" class="field-label">2. Revision & comment file</label>
+        <p class="field-desc">Select revision and choose the CSV you exported from your PDF.</p>
+        <div class="field-row field-row-inputs">
+          <select name="revision" id="revision" class="field-select">
+            <option value="">— Select Revision —</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+          <div class="file-wrap">
+            <input type="file" name="file" id="file" accept=".csv" required>
+            <label class="file-label" for="file">
+              Choose CSV
+              <div class="file-name" id="file-name"></div>
+            </label>
+          </div>
         </div>
       </div>
-      <button type="submit" id="submit-btn">Download Excel</button>
+      <div class="field">
+        <span class="field-label">3. Download</span>
+        <p class="field-desc">Get your Comment Response Sheet Excel file.</p>
+        <button type="submit" id="submit-btn">Download Comment Response Sheet</button>
+      </div>
     </form>
 
-    <p class="format-note">Upload an optional <strong>Previous revision</strong> Excel (e.g. revision A) and a <strong>Comment File</strong> CSV for the new revision (e.g. B). The output will contain all previous rows followed by the new rows. CSV must have headers: <code>Page</code> and <code>Text</code>. Output columns: Rev., Page., OE/Owner Comment.</p>
+    <p class="format-note">CSV: headers <code>Page</code> and <code>Text</code>. Output: Rev., Page., OE/Owner Comment.</p>
   </main>
 
   <script>
