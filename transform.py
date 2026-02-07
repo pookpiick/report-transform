@@ -93,7 +93,11 @@ def _fill_workbook_from_csv(csv_stream, template_path: Path, revision: str | Non
         raise ValueError(
             f"CSV must have columns 'Page' and 'Text'; got {reader.fieldnames}"
         )
-    new_rows = [row for row in reader if (row.get("Text") or "").strip()]
+    SKIP_TEXT_VALUES = frozenset(s.strip().lower() for s in ("Closed", "Close", "Open", "Opened"))
+    new_rows = [
+        row for row in reader
+        if (row.get("Text") or "").strip() and (row.get("Text") or "").strip().lower() not in SKIP_TEXT_VALUES
+    ]
 
     row_index = 0
     for prev in previous_rows:
