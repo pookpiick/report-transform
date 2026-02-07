@@ -34,10 +34,11 @@ def get_input_files() -> list[Path]:
     return sorted(INPUT_DIR.glob("*.csv"))
 
 
-def read_previous_revision_rows(workbook_file) -> list[tuple]:
+def read_previous_revision_rows(workbook_file) -> list[list]:
     """
-    Read data rows from a previous revision Excel file (our output format).
-    workbook_file: path or file-like (bytes). Returns list of (no, rev, page, comment).
+    Read all data rows from a previous revision Excel file, preserving every column.
+    workbook_file: path or file-like (bytes). Returns list of rows; each row is a list
+    of cell values for columns 1 to max_column (so previous file's other columns are kept).
     """
     if isinstance(workbook_file, (str, Path)):
         wb = openpyxl.load_workbook(workbook_file)
@@ -45,16 +46,17 @@ def read_previous_revision_rows(workbook_file) -> list[tuple]:
         workbook_file.seek(0)
         wb = openpyxl.load_workbook(io.BytesIO(workbook_file.read()))
     ws = wb.active
+    max_col = ws.max_column
     rows = []
     r = DATA_START_ROW
     while True:
         no_val = ws.cell(row=r, column=COL_NO).value
-        rev_val = ws.cell(row=r, column=COL_REV).value
         page_val = ws.cell(row=r, column=COL_PAGE).value
         comment_val = ws.cell(row=r, column=COL_OE_OWNER_COMMENT).value
         if no_val is None and page_val is None and comment_val is None:
             break
-        rows.append((no_val, rev_val, page_val, comment_val))
+        row_cells = [ws.cell(row=r, column=c).value for c in range(1, max_col + 1)]
+        rows.append(row_cells)
         r += 1
     return rows
 
@@ -100,13 +102,14 @@ def _fill_workbook_from_csv(csv_stream, template_path: Path, revision: str | Non
     ]
 
     row_index = 0
-    for prev in previous_rows:
+    for prev_cells in previous_rows:
         r = DATA_START_ROW + row_index
         row_index += 1
-        ws.cell(row=r, column=COL_NO, value=row_index)
-        ws.cell(row=r, column=COL_REV, value=prev[1])
-        ws.cell(row=r, column=COL_PAGE, value=prev[2])
-        ws.cell(row=r, column=COL_OE_OWNER_COMMENT, value=prev[3])
+        for col_idx, value in enumerate(prev_cells, start=1):
+            if col_idx == COL_NO:
+                ws.cell(row=r, column=col_idx, value=row_index)
+            else:
+                ws.cell(row=r, column=col_idx, value=value)
 
     for row in new_rows:
         r = DATA_START_ROW + row_index
