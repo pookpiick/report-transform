@@ -67,6 +67,35 @@
       gap: 1rem;
     }
 
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .field-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .field-select {
+      font-family: inherit;
+      font-size: 0.95rem;
+      padding: 0.6rem 0.9rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .field-select:hover,
+    .field-select:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+
     .file-wrap {
       position: relative;
     }
@@ -165,6 +194,24 @@
     {% endwith %}
 
     <form action="{{ url_for('transform') }}" method="post" enctype="multipart/form-data" id="form">
+      <div class="field">
+        <label for="revision" class="field-label">Revision</label>
+        <select name="revision" id="revision" class="field-select">
+          <option value="">— Select —</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+          <option value="F">F</option>
+          <option value="G">G</option>
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
       <div class="file-wrap">
         <input type="file" name="file" id="file" accept=".csv" required>
         <label class="file-label" for="file">
@@ -175,7 +222,7 @@
       <button type="submit" id="submit-btn">Download Excel</button>
     </form>
 
-    <p class="format-note">CSV must have headers: <code>Page</code> and <code>Text</code>. Output columns: Page. and OE/Owner Comment.</p>
+    <p class="format-note">CSV must have headers: <code>Page</code> and <code>Text</code>. Choose a Revision (A–G or 0–4) to fill the <strong>Rev.</strong> column for all rows. Output columns: Rev., Page., OE/Owner Comment.</p>
   </main>
 
   <script>

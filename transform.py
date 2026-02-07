@@ -17,12 +17,13 @@ OUTPUT_DIR = PROJECT_ROOT / "output"
 TEMPLATE_PATH = OUTPUT_DIR / "comment_response_template.xlsx"
 
 # Template: row 1 = title, row 2 = headers
-# Column C = "Page.", Column D = "OE/Owner Comment"
+# Column A = "No.", Column B = "Rev.", Column C = "Page.", Column D = "OE/Owner Comment"
 HEADER_ROW = 2
 DATA_START_ROW = 3
+COL_NO = 1
+COL_REV = 2
 COL_PAGE = 3
 COL_OE_OWNER_COMMENT = 4
-COL_NO = 1
 
 
 def get_input_files() -> list[Path]:
@@ -32,23 +33,24 @@ def get_input_files() -> list[Path]:
     return sorted(INPUT_DIR.glob("*.csv"))
 
 
-def transform_csv_to_workbook(csv_file, template_path: Path):
+def transform_csv_to_workbook(csv_file, template_path: Path, revision: str | None = None):
     """
     Read CSV (Page, Text) from file-like csv_file, fill template workbook, return workbook.
     csv_file: path or file-like object (text stream) with UTF-8 CSV data.
+    revision: optional value (e.g. A–G, 0–4) to write into the "Rev." column for all records.
     """
     if isinstance(csv_file, (str, Path)):
         f = open(csv_file, newline="", encoding="utf-8-sig")
         try:
-            return _fill_workbook_from_csv(f, template_path)
+            return _fill_workbook_from_csv(f, template_path, revision)
         finally:
             f.close()
     if hasattr(csv_file, "seek"):
         csv_file.seek(0)
-    return _fill_workbook_from_csv(csv_file, template_path)
+    return _fill_workbook_from_csv(csv_file, template_path, revision)
 
 
-def _fill_workbook_from_csv(csv_stream, template_path: Path):
+def _fill_workbook_from_csv(csv_stream, template_path: Path, revision: str | None = None):
     if not template_path.exists():
         raise FileNotFoundError(f"Template not found: {template_path}")
 
@@ -67,17 +69,18 @@ def _fill_workbook_from_csv(csv_stream, template_path: Path):
         page_val = row.get("Page") or row.get("\ufeffPage")
         text_val = row.get("Text")
         ws.cell(row=r, column=COL_NO, value=i)
+        ws.cell(row=r, column=COL_REV, value=revision)
         ws.cell(row=r, column=COL_PAGE, value=page_val)
         ws.cell(row=r, column=COL_OE_OWNER_COMMENT, value=text_val)
 
     return wb
 
 
-def transform_csv_to_xlsx(csv_path: Path, output_path: Path, template_path: Path) -> None:
+def transform_csv_to_xlsx(csv_path: Path, output_path: Path, template_path: Path, revision: str | None = None) -> None:
     """
     Read CSV (Page, Text), fill template workbook, save to output_path.
     """
-    wb = transform_csv_to_workbook(csv_path, template_path)
+    wb = transform_csv_to_workbook(csv_path, template_path, revision)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     wb.save(output_path)
 

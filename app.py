@@ -45,8 +45,10 @@ def transform():
         flash("Template file not found. Please add comment_response_template.xlsx to the output folder.", "error")
         return redirect(url_for("index"))
 
+    revision = request.form.get("revision") or None
+
     try:
-        wb = transform_csv_to_workbook(io.StringIO(content), TEMPLATE_PATH)
+        wb = transform_csv_to_workbook(io.StringIO(content), TEMPLATE_PATH, revision=revision)
     except ValueError as e:
         flash(str(e), "error")
         return redirect(url_for("index"))
