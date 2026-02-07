@@ -45,33 +45,41 @@ Output files are written to `output/` with the same base name as the input (e.g.
 - Python 3.10+
 - openpyxl, Flask, gunicorn (see `requirements.txt`)
 
-## Deploy on Render (free tier)
+## Deploy on Render
 
-Host the web app on [Render](https://render.com) so anyone can use it in the browser.
+Use this section when you want to (re)deploy the web app on [Render](https://render.com).
 
 ### Before you deploy
 
 - Push this repo to **GitHub** (or GitLab).
-- Keep **`output/comment_response_template.xlsx`** in the repo (do not add it to `.gitignore`), so the app can use it on the server.
+- Keep **`output/comment_response_template.xlsx`** in the repo (do not add it to `.gitignore`).
+- **If `git push` fails with "Permission denied (publickey)":** use HTTPS and a token:
+  1. GitHub → **Settings → Developer settings → Personal access tokens** → create a token with `repo` scope.
+  2. `git remote set-url origin https://github.com/YOUR_USERNAME/report-transform.git`
+  3. Push again; when prompted for password, paste the **token**.
 
 ### Deploy steps
 
-1. Go to **[render.com](https://render.com)** and sign up or log in (GitHub login is easiest).
-2. In the dashboard, click **New +** → **Web Service**.
-3. Connect your Git provider and select the **report-transform** repository (or the repo where you pushed this project).
+1. Go to **[render.com](https://render.com)** and sign in (e.g. with GitHub).
+2. Click **New +** → **Web Service** (the “Dynamic web app…” option).
+3. Connect your Git provider and select the **report-transform** repo → **Connect**.
 4. Configure the service:
-   - **Name:** `report-transform` (or any name you like)
-   - **Region:** choose the closest to you
-   - **Runtime:** **Python 3**
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `gunicorn --bind 0.0.0.0:$PORT app:app`
-   - **Instance type:** **Free** (if available)
-5. Click **Create Web Service**. Render will clone the repo, run the build, and start the app.
-6. When the build finishes, your app will be live at a URL like **`https://report-transform-xxxx.onrender.com`**. Open it to upload CSV and download Excel.
 
-### Using the Blueprint (optional)
+   | Field | Value |
+   |-------|--------|
+   | Name | `report-transform` (or any name) |
+   | Region | Closest to you |
+   | Runtime | **Python 3** |
+   | Build Command | `pip install -r requirements.txt` |
+   | Start Command | `gunicorn --bind 0.0.0.0:$PORT app:app` |
+   | Instance type | **Free** (if available) |
 
-This repo includes **`render.yaml`** (Render Blueprint). After connecting the repo once, you can use **New + → Blueprint** and point it at this repo; Render will create the Web Service from the YAML so you don’t have to fill in build/start commands manually.
+5. Click **Create Web Service**. Wait until the service is **Live**.
+6. Open the URL (e.g. `https://report-transform-xxxx.onrender.com`) to use the app.
+
+### Blueprint (optional)
+
+This repo has **`render.yaml`**. After the repo is connected, you can use **New + → Blueprint** and select this repo; Render will create the Web Service from the YAML so you don’t have to enter build/start commands.
 
 ---
 
