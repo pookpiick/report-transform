@@ -212,22 +212,43 @@
           <option value="4">4</option>
         </select>
       </div>
-      <div class="file-wrap">
-        <input type="file" name="file" id="file" accept=".csv" required>
-        <label class="file-label" for="file">
-          Choose CSV file
-          <div class="file-name" id="file-name"></div>
-        </label>
+      <div class="field">
+        <label for="previous" class="field-label">Previous revision</label>
+        <div class="file-wrap">
+          <input type="file" name="previous" id="previous" accept=".xlsx,.xls">
+          <label class="file-label" for="previous">
+            Choose Excel file (optional)
+            <div class="file-name" id="previous-name"></div>
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="file" class="field-label">Comment File</label>
+        <div class="file-wrap">
+          <input type="file" name="file" id="file" accept=".csv" required>
+          <label class="file-label" for="file">
+            Choose CSV file
+            <div class="file-name" id="file-name"></div>
+          </label>
+        </div>
       </div>
       <button type="submit" id="submit-btn">Download Excel</button>
     </form>
 
-    <p class="format-note">CSV must have headers: <code>Page</code> and <code>Text</code>. Choose a Revision (A–G or 0–4) to fill the <strong>Rev.</strong> column for all rows. Output columns: Rev., Page., OE/Owner Comment.</p>
+    <p class="format-note">Upload an optional <strong>Previous revision</strong> Excel (e.g. revision A) and a <strong>Comment File</strong> CSV for the new revision (e.g. B). The output will contain all previous rows followed by the new rows. CSV must have headers: <code>Page</code> and <code>Text</code>. Output columns: Rev., Page., OE/Owner Comment.</p>
   </main>
 
   <script>
     document.getElementById('file').addEventListener('change', function () {
       var name = document.getElementById('file-name');
+      if (this.files.length) {
+        name.textContent = this.files[0].name;
+      } else {
+        name.textContent = '';
+      }
+    });
+    document.getElementById('previous').addEventListener('change', function () {
+      var name = document.getElementById('previous-name');
       if (this.files.length) {
         name.textContent = this.files[0].name;
       } else {

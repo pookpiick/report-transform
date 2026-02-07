@@ -47,8 +47,18 @@ def transform():
 
     revision = request.form.get("revision") or None
 
+    previous_file = request.files.get("previous")
+    previous_revision_file = None
+    if previous_file and previous_file.filename and previous_file.filename.strip():
+        if not previous_file.filename.lower().endswith((".xlsx", ".xls")):
+            flash("Previous revision file must be an Excel file (.xlsx).", "error")
+            return redirect(url_for("index"))
+        previous_revision_file = previous_file
+
     try:
-        wb = transform_csv_to_workbook(io.StringIO(content), TEMPLATE_PATH, revision=revision)
+        wb = transform_csv_to_workbook(
+            io.StringIO(content), TEMPLATE_PATH, revision=revision, previous_revision_file=previous_revision_file
+        )
     except ValueError as e:
         flash(str(e), "error")
         return redirect(url_for("index"))

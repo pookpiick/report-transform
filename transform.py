@@ -5,6 +5,7 @@ to output/, using the template structure with Page -> Page. and Text -> OE/Owner
 """
 
 import csv
+import io
 import sys
 from pathlib import Path
 
@@ -33,42 +34,82 @@ def get_input_files() -> list[Path]:
     return sorted(INPUT_DIR.glob("*.csv"))
 
 
-def transform_csv_to_workbook(csv_file, template_path: Path, revision: str | None = None):
+def read_previous_revision_rows(workbook_file) -> list[tuple]:
+    """
+    Read data rows from a previous revision Excel file (our output format).
+    workbook_file: path or file-like (bytes). Returns list of (no, rev, page, comment).
+    """
+    if isinstance(workbook_file, (str, Path)):
+        wb = openpyxl.load_workbook(workbook_file)
+    else:
+        workbook_file.seek(0)
+        wb = openpyxl.load_workbook(io.BytesIO(workbook_file.read()))
+    ws = wb.active
+    rows = []
+    r = DATA_START_ROW
+    while True:
+        no_val = ws.cell(row=r, column=COL_NO).value
+        rev_val = ws.cell(row=r, column=COL_REV).value
+        page_val = ws.cell(row=r, column=COL_PAGE).value
+        comment_val = ws.cell(row=r, column=COL_OE_OWNER_COMMENT).value
+        if no_val is None and page_val is None and comment_val is None:
+            break
+        rows.append((no_val, rev_val, page_val, comment_val))
+        r += 1
+    return rows
+
+
+def transform_csv_to_workbook(csv_file, template_path: Path, revision: str | None = None, previous_revision_file=None):
     """
     Read CSV (Page, Text) from file-like csv_file, fill template workbook, return workbook.
     csv_file: path or file-like object (text stream) with UTF-8 CSV data.
-    revision: optional value (e.g. A–G, 0–4) to write into the "Rev." column for all records.
+    revision: optional value (e.g. A–G, 0–4) to write into the "Rev." column for new records.
+    previous_revision_file: optional path or file-like (bytes) of a previous Excel output; its rows are prepended.
     """
     if isinstance(csv_file, (str, Path)):
         f = open(csv_file, newline="", encoding="utf-8-sig")
         try:
-            return _fill_workbook_from_csv(f, template_path, revision)
+            return _fill_workbook_from_csv(f, template_path, revision, previous_revision_file)
         finally:
             f.close()
     if hasattr(csv_file, "seek"):
         csv_file.seek(0)
-    return _fill_workbook_from_csv(csv_file, template_path, revision)
+    return _fill_workbook_from_csv(csv_file, template_path, revision, previous_revision_file)
 
 
-def _fill_workbook_from_csv(csv_stream, template_path: Path, revision: str | None = None):
+def _fill_workbook_from_csv(csv_stream, template_path: Path, revision: str | None = None, previous_revision_file=None):
     if not template_path.exists():
         raise FileNotFoundError(f"Template not found: {template_path}")
 
     wb = openpyxl.load_workbook(template_path)
     ws = wb.active
 
+    previous_rows = []
+    if previous_revision_file is not None:
+        previous_rows = read_previous_revision_rows(previous_revision_file)
+
     reader = csv.DictReader(csv_stream)
     if "Page" not in reader.fieldnames or "Text" not in reader.fieldnames:
         raise ValueError(
             f"CSV must have columns 'Page' and 'Text'; got {reader.fieldnames}"
         )
-    rows = list(reader)
+    new_rows = list(reader)
 
-    for i, row in enumerate(rows, start=1):
-        r = DATA_START_ROW + i - 1
+    row_index = 0
+    for prev in previous_rows:
+        r = DATA_START_ROW + row_index
+        row_index += 1
+        ws.cell(row=r, column=COL_NO, value=row_index)
+        ws.cell(row=r, column=COL_REV, value=prev[1])
+        ws.cell(row=r, column=COL_PAGE, value=prev[2])
+        ws.cell(row=r, column=COL_OE_OWNER_COMMENT, value=prev[3])
+
+    for row in new_rows:
+        r = DATA_START_ROW + row_index
+        row_index += 1
         page_val = row.get("Page") or row.get("\ufeffPage")
         text_val = row.get("Text")
-        ws.cell(row=r, column=COL_NO, value=i)
+        ws.cell(row=r, column=COL_NO, value=row_index)
         ws.cell(row=r, column=COL_REV, value=revision)
         ws.cell(row=r, column=COL_PAGE, value=page_val)
         ws.cell(row=r, column=COL_OE_OWNER_COMMENT, value=text_val)
